@@ -47,10 +47,10 @@
             <artifactId>hibernate-entitymanager</artifactId>
             <version>5.4.2.Final</version>
             <exclusions>
-                <exclusion>
+                <!-- <exclusion>
                     <artifactId>jaxb-api</artifactId>
                     <groupId>javax.xml.bind</groupId>
-                </exclusion>
+                </exclusion> -->
                 <exclusion>
                     <artifactId>jaxb-runtime</artifactId>
                     <groupId>org.glassfish.jaxb</groupId>
