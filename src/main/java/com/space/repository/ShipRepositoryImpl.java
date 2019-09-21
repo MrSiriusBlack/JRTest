@@ -9,9 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Repository
 @Transactional
@@ -83,12 +81,24 @@ public class ShipRepositoryImpl implements ShipRepository{
 
         query.setParameter("afterDate", afterParam);
         query.setParameter("beforeDate", beforeParam);
-//        query.setParameter("shipOrder", shipOrder.getFieldName());
 
         query.setFirstResult(pageNumber * pageSize);
         query.setMaxResults(pageSize);
 
-        return query.getResultList();
+        List<Ship> ships = query.getResultList();
+
+        switch (shipOrder) {
+            case SPEED:
+                Collections.sort(ships, (s1 , s2) -> Double.compare(s1.getSpeed(), s2.getSpeed()));
+                break;
+            case DATE:
+                Collections.sort(ships, (s1 , s2) -> s1.getProdDate().compareTo(s2.getProdDate()));
+                break;
+            case RATING:
+                Collections.sort(ships, (s1 , s2) -> Double.compare(s1.getRating(), s2.getRating()));
+        }
+
+        return ships;
     }
 
     @Override
@@ -158,7 +168,68 @@ public class ShipRepositoryImpl implements ShipRepository{
     }
 
     @Override
-    public Ship getShip(int id) {
-        return null;
+    public Ship getShip(Long id) {
+        return em.find(Ship.class, id);
+    }
+
+    @Override
+    public Ship createShip(
+            String name,
+            String planet,
+            ShipType shipType,
+            Long prodDate,
+            boolean isUsed,
+            Double speed,
+            Integer crewSize
+    ) {
+        Calendar calendar = Calendar.getInstance();
+        Date prodDateParam;
+        calendar.setTimeInMillis(prodDate);
+        calendar.set(Calendar.DAY_OF_YEAR, 1);
+        prodDateParam = calendar.getTime();
+        Ship ship = new Ship(name, planet, shipType, prodDateParam, isUsed, speed, crewSize);
+        em.merge(ship);
+
+        return ship;
+    }
+
+    @Override
+    public Ship updateShip(
+            Long id,
+            String name,
+            String planet,
+            ShipType shipType,
+            Long prodDate,
+            Boolean isUsed,
+            Double speed,
+            Integer crewSize
+    ) {
+        Ship ship = getShip(id);
+        if (name != null)
+            ship.setName(name);
+        if (planet != null)
+            ship.setPlanet(planet);
+        if (shipType != null)
+            ship.setShipType(shipType);
+        if (prodDate != null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(prodDate);
+            calendar.set(Calendar.DAY_OF_YEAR, 1);
+            ship.setProdDate(calendar.getTime());
+        }
+        if (isUsed != null)
+            ship.setUsed(isUsed);
+        if (speed != null)
+            ship.setSpeed(speed);
+        if (crewSize != null)
+            ship.setCrewSize(crewSize);
+        ship.setRating();
+
+        return ship;
+    }
+
+    @Override
+    public void deleteShip(Long id) {
+        em.remove(getShip(id));
     }
 }

@@ -39,5 +39,25 @@ public interface ShipRepository {
             Double minRating,
             Double maxRating
     );
-    Ship getShip(int id);
+    Ship getShip(Long id);
+    Ship createShip(
+            String name,
+            String planet,
+            ShipType shipType,
+            Long prodDate,
+            boolean isUsed,
+            Double speed,
+            Integer crewSize
+    );
+    Ship updateShip(
+            Long id,
+            String name,
+            String planet,
+            ShipType shipType,
+            Long prodDate,
+            Boolean isUsed,
+            Double speed,
+            Integer crewSize
+    );
+    void deleteShip(Long id);
 }
