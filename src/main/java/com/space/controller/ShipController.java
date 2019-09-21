@@ -83,8 +83,8 @@ public class ShipController {
         ShipType shipType = map.containsKey("shipType") ? ShipType.valueOf((String) map.get("shipType")) : null;
         Long prodDate = map.containsKey("prodDate") ? (Long) map.get("prodDate") : null;
         boolean isUsed = map.containsKey("isUsed") ? (boolean) map.get("isUsed") : false;
-        Double speed = map.containsKey("speed") ? Double.parseDouble((String) map.get("speed")) : null;
-        Integer crewSize = map.containsKey("crewSize") ? Integer.parseInt((String) map.get("crewSize")) : null;
+        Double speed = map.containsKey("speed") ? Double.parseDouble((String) map.get("speed").toString()) : null;
+        Integer crewSize = map.containsKey("crewSize") ? Integer.parseInt((String) map.get("crewSize").toString()) : null;
 
         if (name == null || planet == null || shipType == null || prodDate == null || speed == null || crewSize == null)
             throw  new ShipBadRequest();
@@ -109,11 +109,11 @@ public class ShipController {
     public @ResponseBody Ship getShip(
             @PathVariable(value = "id") Long id
     ) {
+        if (id <= 0)
+            throw new ShipBadRequest();
         Ship ship = shipRepository.getShip(id);
         if (ship == null)
             throw new ShipNotFoundException();
-        if (id <= 0)
-            throw new ShipBadRequest();
         return shipRepository.getShip(id);
     }
 
@@ -123,10 +123,10 @@ public class ShipController {
             HttpServletRequest request,
             HttpServletResponse response
     ) {
-        if (shipRepository.getShip(id) == null)
-            throw new ShipNotFoundException();
         if (id <= 0)
             throw new ShipBadRequest();
+        if (shipRepository.getShip(id) == null)
+            throw new ShipNotFoundException();
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> map = null;
         try {
@@ -139,8 +139,27 @@ public class ShipController {
         ShipType shipType = map.containsKey("shipType") ? ShipType.valueOf((String) map.get("shipType")) : null;
         Long prodDate = map.containsKey("prodDate") ? (Long) map.get("prodDate") : null;
         Boolean isUsed = map.containsKey("isUsed") ? (boolean) map.get("isUsed") : null;
-        Double speed = map.containsKey("speed") ? Double.parseDouble((String) map.get("speed")) : null;
-        Integer crewSize = map.containsKey("crewSize") ? Integer.parseInt((String) map.get("crewSize")) : null;
+        Double speed = map.containsKey("speed") ? Double.parseDouble((String) map.get("speed").toString()) : null;
+        Integer crewSize = map.containsKey("crewSize") ? Integer.parseInt((String) map.get("crewSize").toString()) : null;
+
+        if (name != null && (name.equals("") || name.length() > 50))
+            throw  new ShipBadRequest();
+        if (planet != null && (planet.equals("") || planet.length() > 50))
+            throw  new ShipBadRequest();
+        if (speed != null) {
+            speed = Math.round(speed * 100) / 100.0;
+            if (speed < 0.01 || speed > 0.99 || crewSize < 1 || crewSize > 9999)
+                throw new ShipBadRequest();
+        }
+        if (prodDate != null) {
+            if (prodDate < 0)
+                throw new ShipBadRequest();
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis(prodDate);
+            int year = calendar.get(Calendar.YEAR);
+            if (year < 2800 || year > 3019)
+                throw new ShipBadRequest();
+        }
 
         Ship ship = shipRepository.updateShip(id, name, planet, shipType, prodDate, isUsed, speed, crewSize);
         return ship;
@@ -148,10 +167,10 @@ public class ShipController {
 
     @DeleteMapping(value = "/ships/{id}")
     public @ResponseBody void deleteShip(@PathVariable(value = "id") Long id) {
-        if (shipRepository.getShip(id) == null)
-            throw new ShipNotFoundException();
         if (id <= 0)
             throw new ShipBadRequest();
+        if (shipRepository.getShip(id) == null)
+            throw new ShipNotFoundException();
         shipRepository.deleteShip(id);
     }
 

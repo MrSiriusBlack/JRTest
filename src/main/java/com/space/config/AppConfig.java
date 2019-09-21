@@ -18,7 +18,7 @@ import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement
-@ComponentScan("com.space")
+@ComponentScan("com.space.service")
 @EnableJpaRepositories(basePackages = "com.space.repository")
 public class AppConfig {
 
