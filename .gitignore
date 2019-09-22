@@ -3,3 +3,5 @@
 *.iml
 /lib
 /template
+init.sql
+*.pdf
